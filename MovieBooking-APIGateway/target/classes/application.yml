@@ -1,0 +1,32 @@
+
+server:
+  port: 8081
+
+spring:
+  application:
+    name: MovieBooking-APIGateway
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: user-service-route
+              uri: lb://user-service
+              predicates:
+                - Path=/users/**
+              filters:
+                - name: UserRateLimit
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+
+jwt:
+  secret: zR2KvN0jU81EinC7YcAYC8kg1indABKLahMLKjWWvVI=
+  
