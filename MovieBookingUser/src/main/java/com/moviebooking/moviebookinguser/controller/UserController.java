@@ -1,17 +1,37 @@
 package com.moviebooking.moviebookinguser.controller;
 
-import com.moviebooking.moviebookinguser.dto.UserResponse;
-import com.moviebooking.moviebookinguser.entity.User;
+import java.util.Map;
 
-import com.moviebooking.moviebookinguser.service.UserService;
-
-import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestClient;
 
-import java.util.List;
+import com.moviebooking.moviebookinguser.dto.BookMovieRequest;
+import com.moviebooking.moviebookinguser.dto.UserResponse;
+import com.moviebooking.moviebookinguser.entity.User;
+import com.moviebooking.moviebookinguser.repository.UserRepository;
+import com.moviebooking.moviebookinguser.service.UserService;
+
+import java.util.Map;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.server.ResponseStatusException;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/users")
@@ -20,6 +40,8 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final RestClient bookingRestClient;
+    private final UserRepository userRepository;
 
     @CrossOrigin
     @PostMapping("/addUser")
@@ -65,5 +87,31 @@ public class UserController {
 
         return ResponseEntity.ok(
                 "User deleted successfully");
+    }
+    
+    @PostMapping("/{userId}/bookings")
+    public ResponseEntity<String> bookMovie(
+            @PathVariable Long userId,
+            @RequestBody BookMovieRequest request) {
+
+       
+
+        Map<String, Object> bookingRequest = Map.of(
+                "userId", userId,
+                "movieId", request.movieId(),
+                "numberOfTickets", request.numberOfTickets(),
+                "paymentMethod", request.paymentMethod()
+        );
+
+        String response = bookingRestClient.post()
+                .uri("/bookings")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(bookingRequest)
+                .retrieve()
+                .body(String.class);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(response);
     }
 }

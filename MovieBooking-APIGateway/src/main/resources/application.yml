@@ -29,4 +29,21 @@ eureka:
 
 jwt:
   secret: zR2KvN0jU81EinC7YcAYC8kg1indABKLahMLKjWWvVI=
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  pattern:
+    correlation: "[${spring.application.name:},%X{traceId:-},%X{spanId:-}] "  
   
